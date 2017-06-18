@@ -6,7 +6,7 @@
  */ 
 #include "DTH11.h"
 #include <avr/io.h> 
-#define F_CPU 11059200UL
+//#define F_CPU 11059200UL
 #include <util/delay.h>
 
 uint8_t dht11_getdata(uint8_t select) {

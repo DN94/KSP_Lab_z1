@@ -564,7 +564,8 @@ Returns:  None
 **************************************************************************/
 void uart_flush(void)
 {
-        UART_RxHead = UART_RxTail;
+     unsigned char dummy;
+     while ( UART0_STATUS  & (1<<7) ) dummy = UART0_DATA;
 }/* uart_flush */
 
 

@@ -4,7 +4,8 @@
 
 #include <avr/io.h> 
 
-#define F_CPU 11059200UL
+//#define F_CPU 11059200UL
+#define F_CPU 16000000UL
 #define DHT11_DDR DDRD
 #define DHT11_PORT PORTD
 #define DHT11_PIN PIND
