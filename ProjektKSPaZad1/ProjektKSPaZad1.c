@@ -4,28 +4,23 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #define UART_BAUD_RATE 115200
-//#define UART_BAUD_RATE 500000
 #include "uart.h"
 
-volatile int8_t temperature = 0;
+volatile dht11 param;
 volatile char loop = 20;
-//volatile char sendEnable = 0;
 char printbuff[30];
-char inputbuff[30];
+volatile char inputbuff[10];
 
 ISR(TIMER1_COMPA_vect) // przerwanie s³u¿y do obs³ugi wysy³ania danych co sekundê
 {
-	if(loop >= 10)
-	{
-		temperature=dht11_gettemperature();
-		loop = 0;
-	}
 	loop++;
 	uart_puts("T:");
-	itoa(temperature, printbuff, 10);
+	itoa(param.temperature, printbuff, 10);
 	uart_puts(printbuff);
-	uart_puts("\r\n");
-	//sendEnable = 0;
+	uart_puts("H:");
+	itoa(param.humidity, printbuff, 10);
+	uart_puts(printbuff);	
+	uart_puts("\r\n");	
 }
 
 void CTC1_init() //inciclalizacja timera1 pod wysy³anie 
@@ -65,26 +60,18 @@ int main(void)
 				{
 					out +=  (inputbuff[i]-0x30)<<(i-1);
 				}											    	
-			}		
-			uart_flush();
+			}					
+			uart_flush();			
 			PORTC = out;
-			_delay_ms(50);
+			_delay_ms(30);
 			PORTC = 0x00;																
 		}
-		/*if(sendEnable == 1)
+		if(loop >= 10)
 		{
-			if(loop >= 10)
-			{
-				temperature=dht11_gettemperature();
-				loop = 0;
-			}
-			loop++;
-			uart_puts("T:");
-			itoa(temperature, printbuff, 10);
-			uart_puts(printbuff);
-			uart_puts("\r\n");
-			sendEnable = 0;
-		}	*/	
+			param = dht11_getMeasure();
+			loop = 0;
+		}		
 	} 
 	return 0; 
 }
+

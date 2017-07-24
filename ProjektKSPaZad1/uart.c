@@ -479,8 +479,7 @@ unsigned int uart_getc(void)
     UART_RxTail = tmptail; 
     
     /* get data from receive buffer */
-    data = UART_RxBuf[tmptail];
-
+    data = UART_RxBuf[tmptail];  
     return (UART_LastRxError << 8) + data;
 
 }/* uart_getc */
@@ -566,6 +565,7 @@ void uart_flush(void)
 {
      unsigned char dummy;
      while ( UART0_STATUS  & (1<<7) ) dummy = UART0_DATA;
+	 UART_RxHead = UART_RxTail = 0; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! moja modyfikacja.
 }/* uart_flush */
 
 
