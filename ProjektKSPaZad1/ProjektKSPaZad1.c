@@ -10,6 +10,18 @@ volatile dht11 param;
 volatile char loop = 20;
 char printbuff[30];
 volatile char inputbuff[10];
+volatile int8_t state = 0;
+
+ISR (TIMER0_OVF_vect)
+{
+	if(state == 2){
+		state = 0;
+		PORTC = 0x00;
+	}
+	if(state == 1){
+		state = 2;		
+	}		
+}
 
 ISR(TIMER1_COMPA_vect) // przerwanie s³u¿y do obs³ugi wysy³ania danych co sekundê
 {
@@ -17,7 +29,7 @@ ISR(TIMER1_COMPA_vect) // przerwanie s³u¿y do obs³ugi wysy³ania danych co sekund
 	uart_puts("T:");
 	itoa(param.temperature, printbuff, 10);
 	uart_puts(printbuff);
-	uart_puts("H:");
+	uart_puts(" H:");
 	itoa(param.humidity, printbuff, 10);
 	uart_puts(printbuff);	
 	uart_puts("\r\n");	
@@ -35,6 +47,16 @@ void CTC1_init() //inciclalizacja timera1 pod wysy³anie
 	TIMSK |= (1 << OCIE1A);
 }
 
+void CTC0_init() //inciclalizacja timera1 pod wysy?anie
+{
+	// set up timer with prescaler = 1024 and CTC mode
+	TCCR0 |= (1 << CS02)|(1 << CS00);
+	// initialize counter
+	TCNT0 = 0;
+	// enable overflow interrupt
+	TIMSK |= (1 << TOIE0);
+}
+
 int main(void) 
 { 
 	DDRC = 0x1F;
@@ -42,7 +64,8 @@ int main(void)
 	_delay_ms(1000);
 	PORTC = 0x00;
 	uart_init(UART_BAUD_SELECT(UART_BAUD_RATE,F_CPU));
-	CTC1_init();	
+	CTC1_init();
+	CTC0_init();	
 	sei();
 	unsigned int receivedData, aa=0;	
 	char out = 0;	
@@ -63,8 +86,7 @@ int main(void)
 			}					
 			uart_flush();			
 			PORTC = out;
-			_delay_ms(30);
-			PORTC = 0x00;																
+			state = 1;																
 		}
 		if(loop >= 10)
 		{
